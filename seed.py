@@ -25,6 +25,9 @@ def load_users():
         row = row.rstrip()
         user_id, age, gender, occupation, zipcode = row.split("|")
 
+        if zipcode:
+            zipcode = zipcode.decode("latin-1")
+
         user = User(user_id=user_id,
                     age=age,
                     zipcode=zipcode)
@@ -46,6 +49,7 @@ def load_movies():
     for row in open("seed_data/u.item"):
         row = row.rstrip()
         row = row.split("|")
+
         movie_id = row[0]
         title = row[1]
         released_str = row[2]
@@ -53,11 +57,13 @@ def load_movies():
 
         if title:
             title = title[:-7]
+            title = title.decode("latin-1")     # decode from latin-1 to unicode
         else:
             title = None
 
-        if released_str:
+        if released_str and imdb_url:
             released_at = datetime.strptime(released_str, '%d-%b-%Y')
+            imdb_url = imdb_url.decode("latin-1")
             movie = Movie(movie_id=movie_id,
                           title=title,
                           released_at=released_at,
