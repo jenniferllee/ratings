@@ -61,9 +61,9 @@ def load_movies():
         else:
             title = None
 
-        if released_str and imdb_url:
+        if released_str:    # and imdb_url:
             released_at = datetime.strptime(released_str, '%d-%b-%Y')
-            imdb_url = imdb_url.decode("latin-1")
+            # imdb_url = imdb_url.decode("latin-1")
             movie = Movie(movie_id=movie_id,
                           title=title,
                           released_at=released_at,
