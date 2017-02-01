@@ -3,7 +3,7 @@
 from jinja2 import StrictUndefined
 
 from flask import (Flask, jsonify, render_template, redirect, request, flash,
-                   session)
+                   session, url_for)
 
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -60,7 +60,7 @@ def handle_login_form():
         if password == user.password:
             session['Logged in user'] = user.user_id    # add user id to Flask session
             flash("Logged in.")
-            return redirect("/")    # TO DO: redirect to user's page
+            return redirect(url_for('show_user_page', user_id=session['Logged in user']))
         else:
             flash("Invalid password.")
             return redirect("/login")
@@ -110,20 +110,25 @@ def logout():
     return redirect("/")
 
 
-# @app.route("/users/{{ user.user_id }}")
-@app.route("/users/user-page")
+@app.route("/users/user-page")      # /<user_id>
 def show_user_page():
     """Displays user info."""
 
     user_id = request.args.get("user_id")
     user = db.session.query(User).filter(User.user_id == user_id).first()
-    ratings = db.session.query(Rating.movie_id, Rating.score).filter(Rating.user_id == user_id).all()
-                            # (movie id, score)
-                            # QUESTION: how to access Movie from Rating using .movie?
+
+    movie_titles = db.session.query(Movie.title).filter((Rating.user_id == user_id) &
+                                                        (Rating.movie_id == Movie.movie_id)).all()
+    movie_titles = [i[0] for i in movie_titles]
+
+    ratings = db.session.query(Rating.score).join(Movie).filter(Rating.user_id == user_id).all()
+    ratings = [i[0] for i in ratings]
+
+    title_and_rating = zip(movie_titles, ratings)
 
     return render_template("user_page.html",
                            user=user,
-                           ratings=ratings)
+                           title_and_rating=title_and_rating)
 
 
 if __name__ == "__main__":

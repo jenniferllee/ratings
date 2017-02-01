@@ -5,9 +5,9 @@
 <p>Zipcode: {{ user.zipcode }}</p>
 <p>Movies Rated: 
     <ul>
-        {% for title, score in ratings %}
+        {% for title, rating in title_and_rating %}
             <li>
-                {{ title }}: {{ score }}
+                {{ title }}: {{ rating }}
             </li>
         {% endfor %}
     </ul></p>
