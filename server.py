@@ -58,8 +58,7 @@ def handle_login_form():
 
     if user:
         if password == user.password:
-            session['Logged in user'] = user.user_id
-            # TO DO: add user id to Flask session
+            session['Logged in user'] = user.user_id    # add user id to Flask session
             flash("Logged in.")
             return redirect("/")    # TO DO: redirect to user's page
         else:
@@ -98,6 +97,33 @@ def handle_registration_form():
 
         flash("Account created! Please log in.")
         return redirect("/login")
+
+
+@app.route("/logout")
+def logout():
+    """Logs user out and removes user ID from session."""
+
+    del session['Logged in user']
+    print session
+
+    flash("Logged out")
+    return redirect("/")
+
+
+# @app.route("/users/{{ user.user_id }}")
+@app.route("/users/user-page")
+def show_user_page():
+    """Displays user info."""
+
+    user_id = request.args.get("user_id")
+    user = db.session.query(User).filter(User.user_id == user_id).first()
+    ratings = db.session.query(Rating.movie_id, Rating.score).filter(Rating.user_id == user_id).all()
+                            # (movie id, score)
+                            # QUESTION: how to access Movie from Rating using .movie?
+
+    return render_template("user_page.html",
+                           user=user,
+                           ratings=ratings)
 
 
 if __name__ == "__main__":
