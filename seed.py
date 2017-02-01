@@ -58,17 +58,17 @@ def load_movies():
         if title:
             title = title[:-7]
             title = title.decode("latin-1")     # decode from latin-1 to unicode
-        else:
-            title = None
 
-        if released_str:    # and imdb_url:
+        if released_str:
             released_at = datetime.strptime(released_str, '%d-%b-%Y')
-            # imdb_url = imdb_url.decode("latin-1")
-            movie = Movie(movie_id=movie_id,
-                          title=title,
-                          released_at=released_at,
-                          imdb_url=imdb_url)
-            db.session.add(movie)
+        else:
+            released_at = None
+
+        movie = Movie(movie_id=movie_id,
+                      title=title,
+                      released_at=released_at,
+                      imdb_url=imdb_url)
+        db.session.add(movie)
 
     db.session.commit()
 
@@ -95,6 +95,8 @@ def load_ratings():
 
 def set_val_user_id():
     """Set value for the next user_id after seeding database"""
+
+    print "Setting max user ID value!"
 
     # Get the Max user_id in the database
     result = db.session.query(func.max(User.user_id)).one()

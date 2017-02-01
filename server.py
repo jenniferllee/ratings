@@ -38,37 +38,66 @@ def user_list():
 
 @app.route("/login")
 def user_login():
-    """Show form for user to enter email and password.
-
-    If user is already registered, user becomes logged in.
-    If user is new to site, new user is created in database."""
+    """Show form for user to enter email and password."""
 
     return render_template("user_login.html")
 
 
 @app.route("/login-success", methods=['POST'])
 def handle_login_form():
-    """Handle login submission and redirect to homepage."""
+    """Handle login submission and redirect to homepage.
+
+    If user is already registered, user becomes logged in.
+    If user is new to site, user is directed to registration."""
 
     email = request.form.get("email")
     password = request.form.get("password")
 
-    all_emails = db.session.query(User.email).all()
-    print all_emails
+    user = db.session.query(User).filter(User.email == email).first()
+    print user
 
-    if email in all_emails:
-        db_password = db.session.query(User.password).filter(User.email == email).one()
-        print db_password
-        # if password == db_password:
-        #     # login
-        # else:
-        #     # error
+    if user:
+        if password == user.password:
+            session['Logged in user'] = user.user_id
+            # TO DO: add user id to Flask session
+            flash("Logged in.")
+            return redirect("/")    # TO DO: redirect to user's page
+        else:
+            flash("Invalid password.")
+            return redirect("/login")
     else:
-        new_user = User(email=email, password=password)
+        flash("You are not registered with us.")
+        return redirect("/register")
+
+
+@app.route("/register")
+def register():
+    """Show form for user to register."""
+
+    return render_template("register.html")
+
+
+@app.route("/register-success", methods=["POST"])
+def handle_registration_form():
+    """Handle registration submission and redirect to login page."""
+
+    email = request.form.get("email")
+    password = request.form.get("password")
+    age = request.form.get("age")
+    zipcode = request.form.get("zip")
+
+    user = db.session.query(User).filter(User.email == email).first()
+
+    if user:
+        flash("You are already registered. Please log in.")
+        return redirect("/login")
+    else:
+        new_user = User(email=email, password=password, age=age, zipcode=zipcode)
         db.session.add(new_user)
         db.session.commit()
 
-    return redirect("/")  # email=email, password=password)
+        flash("Account created! Please log in.")
+        return redirect("/login")
 
 
 if __name__ == "__main__":
@@ -82,6 +111,4 @@ if __name__ == "__main__":
     # Use the DebugToolbar
     DebugToolbarExtension(app)
 
-
-    
     app.run(port=5000, host='0.0.0.0')

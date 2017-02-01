@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+Go back to login page <a href="/login">here</a>.
+
+<form action="/register-success" method="post" name="registration-form">
+    <label>Email: </label>
+        <input type="text" id="email" name="email"><br>
+    <label>Password: </label>
+        <input type="text" id="password" name="password"><br>
+   <!--  <label>Occupation: </label>
+        <input type="text" id="occupation" name="occupation"><br> -->
+    <label>Age: </label>
+        <input type="text" id="age" name="age"><br>
+    <!-- <label>Gender: </label>
+        <input type="radio" id="gender" name="gender" value="M">Male
+        <input type="radio" id="gender" name="gender" value="F">Female<br> -->
+    <label>Zipcode: </label>
+        <input type="text" id="zip" name="zip"><br>
+    <input type="submit" value="Register">
+</form>
+
+{% endblock %}
