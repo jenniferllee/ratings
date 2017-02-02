@@ -9,6 +9,8 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 from model import User, Rating, Movie, connect_to_db, db
 
+from datetime import datetime
+
 
 app = Flask(__name__)
 
@@ -110,25 +112,54 @@ def logout():
     return redirect("/")
 
 
-@app.route("/users/user-page")      # /<user_id>
+@app.route("/users/user-page")              # /<user_id>
 def show_user_page():
     """Displays user info."""
 
-    user_id = request.args.get("user_id")
+    user_id = request.args.get("user_id")   # if ^, comment out this line
     user = db.session.query(User).filter(User.user_id == user_id).first()
 
-    movie_titles = db.session.query(Movie.title).filter((Rating.user_id == user_id) &
-                                                        (Rating.movie_id == Movie.movie_id)).all()
-    movie_titles = [i[0] for i in movie_titles]
-
-    ratings = db.session.query(Rating.score).join(Movie).filter(Rating.user_id == user_id).all()
-    ratings = [i[0] for i in ratings]
-
-    title_and_rating = zip(movie_titles, ratings)
+    title_and_rating = db.session.query(Movie.title, Rating.score).filter((Rating.user_id == user_id) &
+                                                                          (Rating.movie_id == Movie.movie_id)).all()
 
     return render_template("user_page.html",
                            user=user,
                            title_and_rating=title_and_rating)
+
+
+@app.route("/movies")
+def movie_list():
+    """Show list of movies."""
+
+    movies = Movie.query.order_by(Movie.title).all()
+    return render_template("movie_list.html", movies=movies)
+
+
+@app.route("/movies/movie-page")
+def show_movie_page():
+    """Displays movie info."""
+
+    movie_id = request.args.get("movie_id")
+    movie = db.session.query(Movie).filter(Movie.movie_id == movie_id).first()
+    movie.released_at = movie.released_at.strftime("%B %d, %Y")
+
+    rating_list = db.session.query(User.user_id, Rating.score).filter((Movie.movie_id == movie_id) &
+                                                                      (Rating.movie_id == Movie.movie_id) &
+                                                                      (Rating.user_id == User.user_id)).all()
+
+    return render_template("movie_page.html",
+                           movie=movie,
+                           rating_list=rating_list)
+
+
+@app.route("/movie-add-success", methods=["POST"])
+def add_rating():
+    """Add new rating to database or update existing rating."""
+
+    movie_id = request.form.get("movie-id")
+    user_rating = request.form.get("user-rating")
+
+    # if statements: separate add new rating from update existing rating
 
 
 if __name__ == "__main__":

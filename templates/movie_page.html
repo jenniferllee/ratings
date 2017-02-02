@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<p>Title: {{ movie.title }}</p>
+<p>Release Date: {{ movie.released_at }}</p>
+<p><a href="{{ movie.imdb_url }}">IMDb</a></p>
+
+<p>Add a New Rating or Update Your Current Rating:<br>
+    <form action="/movie-add-success" method="post">
+        <label>Rating: </label>
+        <input type="text" id="movie-id" name="movie-id" value="{{ movie.movie_id }}" hidden>
+        <input type="text" id="user-rating" name="user-rating">
+        <input type="submit" id="submit-button" value="Submit New Rating">
+    </form>
+</p>
+
+<p>Ratings for This Movie: 
+    <ul>
+        {% for user_id, rating in rating_list %}
+            <li>
+                User {{ user_id }} rated this movie a {{ rating }}.
+            </li>
+        {% endfor %}
+    </ul></p>
+
+{% endblock %}
