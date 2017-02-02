@@ -112,7 +112,7 @@ def logout():
     return redirect("/")
 
 
-@app.route("/users/user-page")              # /<user_id>
+@app.route("/users/user-page/")              # /<user_id>
 def show_user_page():
     """Displays user info."""
 
@@ -158,8 +158,27 @@ def add_rating():
 
     movie_id = request.form.get("movie-id")
     user_rating = request.form.get("user-rating")
+    user_id = session['Logged in user']
 
-    # if statements: separate add new rating from update existing rating
+    rating_by_user = db.session.query(Rating.user_id).filter((Rating.movie_id == movie_id) &
+                                                             (Rating.user_id == user_id)).first()
+
+    if rating_by_user:
+        # update rating
+        rating_to_update = db.session.query(Rating).filter((Rating.user_id == user_id) &
+                                                           (Rating.movie_id == movie_id)).first()
+        setattr(rating_to_update, 'score', user_rating)
+
+    else:
+        # add new rating
+        rating_to_add = Rating(user_id=user_id,
+                               movie_id=movie_id,
+                               score=user_rating)
+        db.session.add(rating_to_add)
+
+    db.session.commit()
+
+    return redirect(url_for("show_movie_page", movie_id=movie_id))
 
 
 if __name__ == "__main__":
